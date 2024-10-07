@@ -78,6 +78,18 @@ void ReadBtn()
 	}
 }
 
+void JeuxDeLumiere()
+{
+  GPIO_PinState input = HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin);
+
+  SetLedOutput(LD1_Pin, GPIO_PIN_SET, 500 * (1 + input));
+  SetLedOutput(LD1_Pin, GPIO_PIN_RESET, 500 * (1 + input));
+  SetLedOutput(LD2_Pin, GPIO_PIN_SET, 500 * (1 + input));
+  SetLedOutput(LD2_Pin, GPIO_PIN_RESET, 500 * (1 + input));
+  SetLedOutput(LD3_Pin, GPIO_PIN_SET, 500 * (1 + input));
+  SetLedOutput(LD3_Pin, GPIO_PIN_RESET, 500 * (1 + input));
+}
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -136,7 +148,9 @@ int main(void)
     // SetLedOutput(LD3_Pin, GPIO_PIN_SET, 600);
     // SetLedOutput(LD3_Pin, GPIO_PIN_RESET, 000);
 
-    ReadBtn();
+    // ReadBtn();
+
+    JeuxDeLumiere();
   }
   /* USER CODE END 3 */
 }
