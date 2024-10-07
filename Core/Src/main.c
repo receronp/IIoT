@@ -64,6 +64,20 @@ void SetLedOutput(uint16_t GPIO_Pin, GPIO_PinState PinState, uint16_t Delay)
   }
 }
 
+void ReadBtn()
+{
+	GPIO_PinState input = HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin);
+	if(input == GPIO_PIN_SET){
+		SetLedOutput(LD1_Pin, GPIO_PIN_SET, 0);
+		SetLedOutput(LD2_Pin, GPIO_PIN_SET, 0);
+		SetLedOutput(LD3_Pin, GPIO_PIN_SET, 0);
+	} else {
+		SetLedOutput(LD1_Pin, GPIO_PIN_RESET, 0);
+		SetLedOutput(LD2_Pin, GPIO_PIN_RESET, 0);
+		SetLedOutput(LD3_Pin, GPIO_PIN_RESET, 0);
+	}
+}
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -115,12 +129,14 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    SetLedOutput(LD1_Pin, GPIO_PIN_SET, 200);
-    SetLedOutput(LD1_Pin, GPIO_PIN_RESET, 300);
-    SetLedOutput(LD2_Pin, GPIO_PIN_SET, 400);
-    SetLedOutput(LD2_Pin, GPIO_PIN_RESET, 500);
-    SetLedOutput(LD3_Pin, GPIO_PIN_SET, 600);
-    SetLedOutput(LD3_Pin, GPIO_PIN_RESET, 000);
+    // SetLedOutput(LD1_Pin, GPIO_PIN_SET, 200);
+    // SetLedOutput(LD1_Pin, GPIO_PIN_RESET, 300);
+    // SetLedOutput(LD2_Pin, GPIO_PIN_SET, 400);
+    // SetLedOutput(LD2_Pin, GPIO_PIN_RESET, 500);
+    // SetLedOutput(LD3_Pin, GPIO_PIN_SET, 600);
+    // SetLedOutput(LD3_Pin, GPIO_PIN_RESET, 000);
+
+    ReadBtn();
   }
   /* USER CODE END 3 */
 }
