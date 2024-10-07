@@ -54,6 +54,16 @@
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
+// Custom defined functions
+void SetLedOutput(uint16_t GPIO_Pin, GPIO_PinState PinState, uint16_t Delay)
+{
+  HAL_GPIO_WritePin(LD1_GPIO_Port, GPIO_Pin, PinState);
+  if (Delay > 0)
+  {
+    HAL_Delay(Delay);
+  }
+}
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -105,20 +115,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
-    HAL_Delay(500);
-    HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
-    HAL_Delay(500);
-
-    HAL_GPIO_WritePin(LD1_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-    HAL_Delay(500);
-    HAL_GPIO_WritePin(LD1_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-    HAL_Delay(500);
-
-    HAL_GPIO_WritePin(LD1_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
-    HAL_Delay(500);
-    HAL_GPIO_WritePin(LD1_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
-    HAL_Delay(500);
+    SetLedOutput(LD1_Pin, GPIO_PIN_SET, 200);
+    SetLedOutput(LD1_Pin, GPIO_PIN_RESET, 300);
+    SetLedOutput(LD2_Pin, GPIO_PIN_SET, 400);
+    SetLedOutput(LD2_Pin, GPIO_PIN_RESET, 500);
+    SetLedOutput(LD3_Pin, GPIO_PIN_SET, 600);
+    SetLedOutput(LD3_Pin, GPIO_PIN_RESET, 000);
   }
   /* USER CODE END 3 */
 }
