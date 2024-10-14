@@ -47,12 +47,22 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+CAN_HandleTypeDef     CanHandle;
+uint32_t              TxMailbox;
+// CAN_Msg_Rx buffer_mensajes[MAX_MENSAJES_FIFO];
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+// // Custom defined functions
+// void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+// {
+// 	uint32_t num_recibidos = CAN_Rx(buffer_mensajes, MAX_MENSAJES_FIFO);
+// 	printf(num_recibidos);
+// }
 
 /* USER CODE END PFP */
 
@@ -95,6 +105,12 @@ int main(void)
   MX_USB_PCD_Init();
   MX_CAN_Init();
   /* USER CODE BEGIN 2 */
+  CAN_Configurar_Filtrado();
+
+  if (HAL_CAN_Start(&hcan) != HAL_OK){
+	   /* Start Error */
+	   Error_Handler();
+   }
 
   /* USER CODE END 2 */
 
@@ -105,6 +121,17 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  uint32_t data[3] = {0b0001, 0b0010, 0b0011};
+	  CAN_TX(0x1ABCDE00, CAN_ID_EXT ,CAN_RTR_DATA, 3, data);
+
+	  data[0] = 0b0100;
+	  data[1] = 0b0101;
+	  data[2] = 0b0110;
+
+	  CAN_TX(0x1ABCDE01, CAN_ID_EXT ,CAN_RTR_DATA, 3, data);
+
+	  CAN_RX();
   }
   /* USER CODE END 3 */
 }

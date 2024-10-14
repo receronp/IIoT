@@ -29,6 +29,8 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
+#include "usart.h"
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -41,6 +43,9 @@ extern CAN_HandleTypeDef hcan;
 void MX_CAN_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+HAL_StatusTypeDef CAN_Configurar_Filtrado();
+HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc, uint32_t *data);
+uint32_t CAN_RX();
 
 /* USER CODE END Prototypes */
 
