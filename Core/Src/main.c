@@ -123,13 +123,13 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  uint32_t data[3] = {0b0001, 0b0010, 0b0011};
-	  CAN_TX(0x1ABCDE00, CAN_ID_EXT ,CAN_RTR_DATA, 3, data);
+	  CAN_TX(0x04, CAN_ID_STD ,CAN_RTR_DATA, 3, data);
 
 	  data[0] = 0b0100;
 	  data[1] = 0b0101;
 	  data[2] = 0b0110;
 
-	  CAN_TX(0x1ABCDE01, CAN_ID_EXT ,CAN_RTR_DATA, 3, data);
+	  CAN_TX(0x07, CAN_ID_STD ,CAN_RTR_DATA, 3, data);
 
 	  CAN_RX();
   }
