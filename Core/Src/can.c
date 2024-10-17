@@ -88,6 +88,9 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
     GPIO_InitStruct.Alternate = GPIO_AF9_CAN;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+    /* CAN interrupt Init */
+    HAL_NVIC_SetPriority(USB_LP_CAN_RX0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USB_LP_CAN_RX0_IRQn);
   /* USER CODE BEGIN CAN_MspInit 1 */
 
   /* USER CODE END CAN_MspInit 1 */
@@ -110,6 +113,15 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
     PB9     ------> CAN_TX
     */
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_8|GPIO_PIN_9);
+
+    /* CAN interrupt Deinit */
+  /* USER CODE BEGIN CAN:USB_LP_CAN_RX0_IRQn disable */
+    /**
+    * Uncomment the line below to disable the "USB_LP_CAN_RX0_IRQn" interrupt
+    * Be aware, disabling shared interrupt may affect other IPs
+    */
+    /* HAL_NVIC_DisableIRQ(USB_LP_CAN_RX0_IRQn); */
+  /* USER CODE END CAN:USB_LP_CAN_RX0_IRQn disable */
 
   /* USER CODE BEGIN CAN_MspDeInit 1 */
 
@@ -168,7 +180,10 @@ HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc,
  		 Error_Handler();
  	 }
 
- 	 while(HAL_CAN_IsTxMessagePending(&hcan, TxMailbox));
+// 	 while(HAL_CAN_IsTxMessagePending(&hcan, TxMailbox));
+
+ 	 HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
+ 	 HAL_GPIO_WritePin(LD1_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
  	 return HAL_OK;
  }
 
@@ -181,16 +196,18 @@ HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc,
 
  	while(NumMensajes > 0){
  		if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &RxHeader, RxData)== HAL_OK){
- 		    char hexId[50];
- 		    char hexString[100];
+ 		    char hexId[50] = {'\0'};
+ 		    char hexString[100] = {'\0'};
  		    sprintf(hexId, "RxHeader.StdId = 0x%lx\r\n", RxHeader.StdId);
  		    HAL_UART_Transmit(&huart3, (uint8_t*)hexId, 50, HAL_MAX_DELAY);
- 		    sprintf(hexString, "Message: %d %d %d\r\n", RxData[0], RxData[1], RxData[2]); // Convert to hex string
+ 		    sprintf(hexString, "Message: %d\r\n", RxData[0]); // Convert to hex string
  		    HAL_UART_Transmit(&huart3, (uint8_t*)hexString, 100, HAL_MAX_DELAY); // Send hex string
  		}
 	NumMensajes = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
  	}
 
+	HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LD1_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
  	return (i);
  }
 

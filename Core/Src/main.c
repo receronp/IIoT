@@ -55,14 +55,9 @@ uint32_t              TxMailbox;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
 
-// // Custom defined functions
-// void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
-// {
-// 	uint32_t num_recibidos = CAN_Rx(buffer_mensajes, MAX_MENSAJES_FIFO);
-// 	printf(num_recibidos);
-// }
+/* USER CODE BEGIN PFP */
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
 
 /* USER CODE END PFP */
 
@@ -107,7 +102,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
   CAN_Configurar_Filtrado();
 
-  if (HAL_CAN_Start(&hcan) != HAL_OK){
+  if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
+	  Error_Handler();
+  }
+
+  if (HAL_CAN_Start(&hcan) != HAL_OK) {
 	   /* Start Error */
 	   Error_Handler();
    }
@@ -121,17 +120,11 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  static uint8_t counter = 0;
 
-	  uint32_t data[3] = {0b0001, 0b0010, 0b0011};
-	  CAN_TX(0x04, CAN_ID_STD ,CAN_RTR_DATA, 3, data);
-
-	  data[0] = 0b0100;
-	  data[1] = 0b0101;
-	  data[2] = 0b0110;
-
-	  CAN_TX(0x07, CAN_ID_STD ,CAN_RTR_DATA, 3, data);
-
-	  CAN_RX();
+	  uint32_t data[1] = {counter++};
+	  CAN_TX(data[0], CAN_ID_STD ,CAN_RTR_DATA, 1, data);
+	  HAL_Delay(500);
   }
   /* USER CODE END 3 */
 }
@@ -187,6 +180,10 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+	CAN_RX();
+}
 
 /* USER CODE END 4 */
 

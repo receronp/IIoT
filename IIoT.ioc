@@ -60,6 +60,7 @@ NVIC.PendSV_IRQn=true\:0\:0\:false\:false\:true\:true\:false\:false
 NVIC.PriorityGroup=NVIC_PRIORITYGROUP_4
 NVIC.SVCall_IRQn=true\:0\:0\:false\:false\:true\:true\:false\:false
 NVIC.SysTick_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:false
+NVIC.USB_LP_CAN_RX0_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:true
 NVIC.UsageFault_IRQn=true\:0\:0\:false\:false\:true\:true\:false\:false
 PA11.GPIOParameters=GPIO_Label
 PA11.GPIO_Label=USB_DM
