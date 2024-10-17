@@ -198,12 +198,15 @@ HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc,
  		if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &RxHeader, RxData)== HAL_OK){
  		    char hexId[50] = {'\0'};
  		    char hexString[100] = {'\0'};
- 		    sprintf(hexId, "RxHeader.StdId = 0x%lx\r\n", RxHeader.StdId);
- 		    HAL_UART_Transmit(&huart3, (uint8_t*)hexId, 50, HAL_MAX_DELAY);
- 		    sprintf(hexString, "Message: %d\r\n", RxData[0]); // Convert to hex string
- 		    HAL_UART_Transmit(&huart3, (uint8_t*)hexString, 100, HAL_MAX_DELAY); // Send hex string
+
+ 		   if (RxHeader.RTR == CAN_RTR_REMOTE) {
+ 			   sprintf(hexId, "Remote RxHeader.StdId = 0x%lx\r\n", RxHeader.StdId);
+ 			   HAL_UART_Transmit(&huart3, (uint8_t*)hexId, 50, HAL_MAX_DELAY);
+ 			   sprintf(hexString, "Message: %d\r\n", RxData[0]); // Convert to hex string
+ 			   HAL_UART_Transmit(&huart3, (uint8_t*)hexString, 100, HAL_MAX_DELAY); // Send hex string
+ 		   }
  		}
-	NumMensajes = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
+ 		NumMensajes = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
  	}
 
 	HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
