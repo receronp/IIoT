@@ -55,7 +55,6 @@ uint32_t              TxMailbox;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-
 /* USER CODE BEGIN PFP */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
 
@@ -122,9 +121,6 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  static uint8_t counter = 1;
 
-	  uint32_t data[1] = {counter++};
-//	  CAN_TX(data[0], CAN_ID_STD, CAN_RTR_DATA, 1, data);
-	  CAN_TX(data[0], CAN_ID_STD, CAN_RTR_REMOTE, 1, data);
 	  HAL_Delay(500);
   }
   /* USER CODE END 3 */
