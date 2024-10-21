@@ -120,10 +120,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  static uint8_t counter = 0;
+	  static uint8_t counter = 1;
 
 	  uint32_t data[1] = {counter++};
-	  CAN_TX(data[0], CAN_ID_STD ,CAN_RTR_DATA, 1, data);
+	  CAN_TX(data[0], CAN_ID_STD, (data[0] % 2) * 2, 1, data);
 	  HAL_Delay(500);
   }
   /* USER CODE END 3 */

@@ -135,9 +135,9 @@ HAL_StatusTypeDef CAN_Configurar_Filtrado(){
 	  sFilterConfig.FilterBank = 0;
 	  sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
 	  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-	  sFilterConfig.FilterIdHigh = (0x0000 << 5); // Valor del bit para filtrar
-	  sFilterConfig.FilterIdLow = 0x0000;
-	  sFilterConfig.FilterMaskIdHigh = (0x0001 << 5); // Bit relevante para filtrar
+	  sFilterConfig.FilterIdHigh = (0x0000 << 5);         // Valor del bit para filtrar
+	  sFilterConfig.FilterIdLow = 0x0002;                 // Valor de bit RTR
+	  sFilterConfig.FilterMaskIdHigh = (0x0001 << 5);     // Bit relevante para filtrar
 	  sFilterConfig.FilterMaskIdLow = 0xFFFF;
 	  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
 	  sFilterConfig.FilterActivation = ENABLE;
@@ -198,7 +198,7 @@ HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc,
  		if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &RxHeader, RxData)== HAL_OK){
  		    char hexId[50] = {'\0'};
  		    char hexString[100] = {'\0'};
- 		    sprintf(hexId, "RxHeader.StdId = 0x%lx\r\n", RxHeader.StdId);
+ 		    sprintf(hexId, "Remote RxHeader.StdId = 0x%lx\r\n", RxHeader.StdId);
  		    HAL_UART_Transmit(&huart3, (uint8_t*)hexId, 50, HAL_MAX_DELAY);
  		    sprintf(hexString, "Message: %d\r\n", RxData[0]); // Convert to hex string
  		    HAL_UART_Transmit(&huart3, (uint8_t*)hexString, 100, HAL_MAX_DELAY); // Send hex string
