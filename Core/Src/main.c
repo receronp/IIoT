@@ -47,9 +47,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-CAN_HandleTypeDef     CanHandle;
-uint32_t              TxMailbox;
-// CAN_Msg_Rx buffer_mensajes[MAX_MENSAJES_FIFO];
+const uint8_t ID_NODO = 0x08;
+uint16_t ofertas[128] = {0};
+
 
 /* USER CODE END PV */
 
@@ -57,6 +57,7 @@ uint32_t              TxMailbox;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
+void toggleLED(uint8_t select, uint32_t delay);
 
 /* USER CODE END PFP */
 
@@ -119,12 +120,32 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  static uint8_t counter = 1;
+	  uint32_t data[2] = {0};
 
-	  uint32_t data[1] = {counter++};
-//	  CAN_TX(data[0], CAN_ID_STD, CAN_RTR_DATA, 1, data);
-	  CAN_TX(data[0], CAN_ID_STD, CAN_RTR_REMOTE, 1, data);
-	  HAL_Delay(500);
+
+	  HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin,
+			  getContadorOfertas() > 0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+
+	  GPIO_PinState input = HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin);
+	  if(input == GPIO_PIN_SET){
+		  for(uint8_t ii = 0, jj = 0; ii < 128 && jj < getContadorOfertas(); ii++){
+			  if(ofertas[ii] != 0){
+				  data[0] = ofertas[ii] / 0x100;
+				  data[1] = ofertas[ii] % 0x100;
+				  CAN_TX(ofertas[ii], CAN_ID_STD, CAN_RTR_REMOTE, 2, data);
+				  jj++;
+			  }
+		  }
+	  }
+
+	  for(uint8_t ii = 0; ii < 2; ii++){
+		  if(getDelay(ii) != 0){
+			  toggleLED(ii, getDelay(ii));
+		  }
+	  }
+
+	  HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
@@ -182,7 +203,15 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-	CAN_RX();
+	CAN_RX(ofertas);
+}
+
+void toggleLED(uint8_t select, uint32_t delay) {
+	uint16_t led = select == 0 ? LD2_Pin : LD3_Pin;
+	HAL_GPIO_WritePin(LD1_GPIO_Port, led, GPIO_PIN_SET);
+	HAL_Delay(delay);
+	HAL_GPIO_WritePin(LD1_GPIO_Port, led, GPIO_PIN_RESET);
+	setDelay(select, 0);
 }
 
 /* USER CODE END 4 */

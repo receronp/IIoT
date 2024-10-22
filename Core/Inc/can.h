@@ -45,7 +45,10 @@ void MX_CAN_Init(void);
 /* USER CODE BEGIN Prototypes */
 HAL_StatusTypeDef CAN_Configurar_Filtrado();
 HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc, uint32_t *data);
-uint32_t CAN_RX();
+void CAN_RX(uint16_t *ofertas);
+void setDelay(uint8_t select, uint16_t delay);
+uint16_t getDelay(uint8_t select);
+uint8_t getContadorOfertas();
 
 /* USER CODE END Prototypes */
 

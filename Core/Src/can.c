@@ -27,6 +27,9 @@ uint8_t               TxData[8];
 uint8_t               RxData[8];
 CAN_FilterTypeDef sFilterConfig;
 
+uint16_t mappedDelays[2][2] = {0};
+uint8_t contadorOfertas = 0;
+
 /* USER CODE END 0 */
 
 CAN_HandleTypeDef hcan;
@@ -137,7 +140,7 @@ HAL_StatusTypeDef CAN_Configurar_Filtrado(){
 	  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
 	  sFilterConfig.FilterIdHigh = (0x0000 << 5); // Valor del bit para filtrar
 	  sFilterConfig.FilterIdLow = 0x0000;
-	  sFilterConfig.FilterMaskIdHigh = (0x0001 << 5); // Bit relevante para filtrar
+	  sFilterConfig.FilterMaskIdHigh = (0x0000 << 5); // Bit relevante para filtrar
 	  sFilterConfig.FilterMaskIdLow = 0xFFFF;
 	  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
 	  sFilterConfig.FilterActivation = ENABLE;
@@ -148,6 +151,18 @@ HAL_StatusTypeDef CAN_Configurar_Filtrado(){
 	    Error_Handler();
 	  }
 	  return HAL_OK;
+}
+
+void setDelay(uint8_t select, uint16_t delay){
+	mappedDelays[select][1] = delay;
+}
+
+uint16_t getDelay(uint8_t select){
+	return mappedDelays[select][1];
+}
+
+uint8_t getContadorOfertas(){
+	return contadorOfertas;
 }
 
 HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc, uint32_t *data)
@@ -175,43 +190,49 @@ HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc,
   	 }
 
  	 retorno = HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox);
+	 while(HAL_CAN_IsTxMessagePending(&hcan, TxMailbox));
 
  	 if(retorno != HAL_OK){
  		 Error_Handler();
  	 }
 
-// 	 while(HAL_CAN_IsTxMessagePending(&hcan, TxMailbox));
-
- 	 HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
- 	 HAL_GPIO_WritePin(LD1_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
  	 return HAL_OK;
  }
 
- uint32_t CAN_RX()
+ void CAN_RX(uint16_t *ofertas)
  {
+	char hexString[100] = {'\0'};
  	uint32_t NumMensajes = 0;
- 	uint32_t i = 0;
-
  	NumMensajes = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
 
- 	while(NumMensajes > 0){
+	while(NumMensajes > 0){
  		if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &RxHeader, RxData)== HAL_OK){
- 		    char hexId[50] = {'\0'};
- 		    char hexString[100] = {'\0'};
 
- 		   if (RxHeader.RTR == CAN_RTR_REMOTE) {
- 			   sprintf(hexId, "Remote RxHeader.StdId = 0x%lx\r\n", RxHeader.StdId);
- 			   HAL_UART_Transmit(&huart3, (uint8_t*)hexId, 50, HAL_MAX_DELAY);
- 			   sprintf(hexString, "Message: %d\r\n", RxData[0]); // Convert to hex string
- 			   HAL_UART_Transmit(&huart3, (uint8_t*)hexString, 100, HAL_MAX_DELAY); // Send hex string
- 		   }
+			if(RxHeader.StdId < 128){
+ 		    	if(ofertas[RxHeader.StdId] == 0){
+ 		    		mappedDelays[contadorOfertas++][0] = (RxData[0] << 8) + RxData[1];
+					sprintf(hexString, "[0x%lx 0x%lx] [%d]ms\r\n",
+							mappedDelays[contadorOfertas - 1][0] / 0x100,
+							mappedDelays[contadorOfertas - 1][0] % 0x100,
+							mappedDelays[contadorOfertas - 1][1]);
+					HAL_UART_Transmit(&huart3, (uint8_t*)hexString, 100, HAL_MAX_DELAY);
+ 		    	}
+ 		    	ofertas[RxHeader.StdId] = (RxData[0] << 8) + RxData[1];
+ 			} else {
+ 		    	for(uint8_t ii = 0; ii < 2; ii++){
+ 		    		if (RxHeader.StdId == mappedDelays[ii][0]){
+ 		    			setDelay(ii, (RxData[0] << 8) + RxData[1]);
+ 		 	 		    sprintf(hexString, "[0x%lx 0x%lx] [%d]ms\r\n",
+ 		 	 		    		mappedDelays[ii][0] / 0x100,
+ 		 	 		    		mappedDelays[ii][0] % 0x100,
+								mappedDelays[ii][1]);
+ 		 	 		    HAL_UART_Transmit(&huart3, (uint8_t*)hexString, 100, HAL_MAX_DELAY);
+ 		    		}
+ 		    	}
+ 			}
  		}
  		NumMensajes = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
  	}
-
-	HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(LD1_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
- 	return (i);
  }
 
 /* USER CODE END 1 */
