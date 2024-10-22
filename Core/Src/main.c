@@ -47,9 +47,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-CAN_HandleTypeDef     CanHandle;
-uint32_t              TxMailbox;
-// CAN_Msg_Rx buffer_mensajes[MAX_MENSAJES_FIFO];
+const uint8_t ID_NODO = 0x08;
 
 /* USER CODE END PV */
 
@@ -119,12 +117,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  static uint8_t counter = 1;
-
-	  uint32_t data[1] = {counter++};
-//	  CAN_TX(data[0], CAN_ID_STD, CAN_RTR_DATA, 1, data);
-	  CAN_TX(data[0], CAN_ID_STD, CAN_RTR_REMOTE, 1, data);
-	  HAL_Delay(500);
+	  uint32_t data[2] = {0x02, 0xD0};			// Hex: 0x2D0; Decimal: 720; Binario: 0010 1101 0000
+	  CAN_TX(ID_NODO, CAN_ID_STD, CAN_RTR_DATA, 2, data);
+	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }

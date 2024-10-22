@@ -137,7 +137,7 @@ HAL_StatusTypeDef CAN_Configurar_Filtrado(){
 	  sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
 	  sFilterConfig.FilterIdHigh = (0x0000 << 5); // Valor del bit para filtrar
 	  sFilterConfig.FilterIdLow = 0x0000;
-	  sFilterConfig.FilterMaskIdHigh = (0x0001 << 5); // Bit relevante para filtrar
+	  sFilterConfig.FilterMaskIdHigh = (0x0000 << 5); // Bit relevante para filtrar
 	  sFilterConfig.FilterMaskIdLow = 0xFFFF;
 	  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
 	  sFilterConfig.FilterActivation = ENABLE;
@@ -180,38 +180,42 @@ HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc,
  		 Error_Handler();
  	 }
 
-// 	 while(HAL_CAN_IsTxMessagePending(&hcan, TxMailbox));
-
- 	 HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
- 	 HAL_GPIO_WritePin(LD1_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
  	 return HAL_OK;
  }
 
- uint32_t CAN_RX()
+ void ToggleLED() {
+  HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
+  HAL_Delay(250);
+  HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
+  HAL_Delay(250);
+ }
+
+ void CAN_RX()
  {
  	uint32_t NumMensajes = 0;
- 	uint32_t i = 0;
+ 	uint32_t data[2] = {0};
+ 	uint16_t idTrama = 0x2D0;
+ 	static uint16_t retardo = 0x32;
 
  	NumMensajes = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
 
  	while(NumMensajes > 0){
  		if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &RxHeader, RxData)== HAL_OK){
- 		    char hexId[50] = {'\0'};
- 		    char hexString[100] = {'\0'};
+ 		    if (RxHeader.RTR == CAN_RTR_REMOTE && RxHeader.StdId == idTrama) {
+ 		    	data[0] = retardo / 0x100;
+ 		    	data[1] = retardo % 0x100;
 
- 		   if (RxHeader.RTR == CAN_RTR_REMOTE) {
- 			   sprintf(hexId, "Remote RxHeader.StdId = 0x%lx\r\n", RxHeader.StdId);
- 			   HAL_UART_Transmit(&huart3, (uint8_t*)hexId, 50, HAL_MAX_DELAY);
- 			   sprintf(hexString, "Message: %d\r\n", RxData[0]); // Convert to hex string
- 			   HAL_UART_Transmit(&huart3, (uint8_t*)hexString, 100, HAL_MAX_DELAY); // Send hex string
- 		   }
+ 		    	CAN_TX(idTrama, CAN_ID_STD, CAN_RTR_DATA, 2, data);
+
+          retardo = retardo >= 0x2000 ? 0 : retardo << 1;
+          
+          for (uint8_t ii = 0; ii < 3; ii++){
+            ToggleLED();
+          }
+ 		    }
  		}
  		NumMensajes = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
  	}
-
-	HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(LD1_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
- 	return (i);
  }
 
 /* USER CODE END 1 */
