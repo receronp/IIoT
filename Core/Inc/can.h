@@ -46,6 +46,8 @@ void MX_CAN_Init(void);
 HAL_StatusTypeDef CAN_Configurar_Filtrado();
 HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc, uint32_t *data);
 void CAN_RX();
+void setDelay(uint16_t delay);
+uint16_t getDelay();
 
 /* USER CODE END Prototypes */
 

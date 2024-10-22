@@ -55,6 +55,7 @@ const uint8_t ID_NODO = 0x08;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
+void toggleLED(uint16_t delay);
 
 /* USER CODE END PFP */
 
@@ -117,8 +118,16 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  uint32_t data[2] = {0x02, 0xD0};			// Hex: 0x2D0; Decimal: 720; Binario: 0010 1101 0000
-	  CAN_TX(ID_NODO, CAN_ID_STD, CAN_RTR_DATA, 2, data);
+	  uint32_t data1[2] = {0x02, 0xD0};			// Hex: 0x2D0; Decimal: 720; Binario: 0010 1101 0000
+	  uint32_t data2[2] = {0x02, 0xD2};
+	  CAN_TX(ID_NODO + 2, CAN_ID_STD, CAN_RTR_DATA, 2, data2);
+	  CAN_TX(ID_NODO, CAN_ID_STD, CAN_RTR_DATA, 2, data1);
+	  if(getDelay() != 0){
+		  for (uint8_t ii = 0; ii < 3; ii++){
+			  toggleLED(getDelay());
+		  }
+	  }
+	  setDelay(0);
 	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
@@ -178,6 +187,13 @@ void SystemClock_Config(void)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	CAN_RX();
+}
+
+void toggleLED(uint16_t delay) {
+	HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
+	HAL_Delay(delay);
+	HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
+	HAL_Delay(delay);
 }
 
 /* USER CODE END 4 */

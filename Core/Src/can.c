@@ -27,6 +27,8 @@ uint8_t               TxData[8];
 uint8_t               RxData[8];
 CAN_FilterTypeDef sFilterConfig;
 
+uint16_t toggleDelay = 0;
+
 /* USER CODE END 0 */
 
 CAN_HandleTypeDef hcan;
@@ -150,6 +152,13 @@ HAL_StatusTypeDef CAN_Configurar_Filtrado(){
 	  return HAL_OK;
 }
 
+void setDelay(uint16_t delay){
+	toggleDelay = delay;
+}
+uint16_t getDelay(){
+	return toggleDelay;
+}
+
 HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc, uint32_t *data)
  {
  	CAN_TxHeaderTypeDef TxHeader;
@@ -175,6 +184,7 @@ HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc,
   	 }
 
  	 retorno = HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox);
+	 while(HAL_CAN_IsTxMessagePending(&hcan, TxMailbox));
 
  	 if(retorno != HAL_OK){
  		 Error_Handler();
@@ -183,35 +193,35 @@ HAL_StatusTypeDef CAN_TX(uint32_t id, uint32_t ide , uint32_t rtr, uint32_t dlc,
  	 return HAL_OK;
  }
 
- void ToggleLED() {
-  HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
-  HAL_Delay(250);
-  HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
-  HAL_Delay(250);
- }
-
  void CAN_RX()
  {
  	uint32_t NumMensajes = 0;
  	uint32_t data[2] = {0};
  	uint16_t idTrama = 0x2D0;
- 	static uint16_t retardo = 0x32;
+ 	static uint16_t retardo1 = 0x32;
+ 	static uint16_t retardo2 = 0x2000;
 
  	NumMensajes = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
 
  	while(NumMensajes > 0){
  		if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &RxHeader, RxData)== HAL_OK){
- 		    if (RxHeader.RTR == CAN_RTR_REMOTE && RxHeader.StdId == idTrama) {
- 		    	data[0] = retardo / 0x100;
- 		    	data[1] = retardo % 0x100;
+ 		    if (RxHeader.RTR == CAN_RTR_REMOTE) {
+ 		    	if(RxHeader.StdId == idTrama){
+					data[0] = retardo1 / 0x100;
+					data[1] = retardo1 % 0x100;
 
- 		    	CAN_TX(idTrama, CAN_ID_STD, CAN_RTR_DATA, 2, data);
+					CAN_TX(idTrama, CAN_ID_STD, CAN_RTR_DATA, 2, data);
 
-          retardo = retardo >= 0x2000 ? 0 : retardo << 1;
-          
-          for (uint8_t ii = 0; ii < 3; ii++){
-            ToggleLED();
-          }
+					retardo1 = retardo1 > 0x2000 ? 0x32 : retardo1 << 1;
+ 		    	} else if(RxHeader.StdId == idTrama + 2) {
+					data[0] = retardo2 / 0x100;
+					data[1] = retardo2 % 0x100;
+
+					CAN_TX(idTrama + 2, CAN_ID_STD, CAN_RTR_DATA, 2, data);
+
+					retardo2 = retardo2 < 0x32 ? 0x2000  : retardo2 >> 1;
+ 		    	}
+				setDelay(250);
  		    }
  		}
  		NumMensajes = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
